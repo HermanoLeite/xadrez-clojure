@@ -15,9 +15,10 @@
 (s/defschema Position position-skeleton)
 
 (def piece-skeleton
-  {:position {:schema Position :required true}
-   :color    {:schema Color :required true}
-   :piece    {:schema Type :required true}})
+  {:position  {:schema Position :required true}
+   :color     {:schema Color :required true}
+   :piece     {:schema Type :required true}
+   :movements {:schema s/Int :required true}})
 
 (s/defschema Piece piece-skeleton)
 
