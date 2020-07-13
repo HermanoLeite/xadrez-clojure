@@ -4,7 +4,6 @@
             [chess.schemata.board :as s.board]
             [clojure.string :as str]
             [schema.core :as s])
-
   (:gen-class))
 
 (def abc ["a" "b" "c" "d" "e" "f" "g" "h"])
@@ -16,10 +15,6 @@
 (s/defn column-letter :- s/Str
   [column :- s/Int]
   (nth abc (- column 1)))
-
-(s/defn column-letter->number :- s/Int
-  [column-letter :- s/Str]
-  (+ 1 (.indexOf abc column-letter)))
 
 (s/defn y-axis? :- s/Bool
   [column :- s/Int
@@ -74,8 +69,7 @@
 
 (s/defn find-piece-at-position :- (s/maybe s.piece/Piece)
   [pieces :- (s/maybe s.piece/Piece)
-   line :- s/Int
-   column :- s/Str]
+   {:keys [line column]} :- s.piece/Position]
   (let [piece (filter #(piece-at-position? (:position %) line column) pieces)]
     (first piece)))
 
@@ -114,43 +108,51 @@
   [column :- s/Int]
   (= 8 column))
 
+(def background-black "\033[40m")
+(def background-blue "\033[44m")
+(def letter-white "\u001B[37m")
+(def letter-red "\u001B[31m")
+
 (s/defn color :- s/Str
   [{:keys [color]} :- s.piece/Piece]
   (if (= color :black)
-    "\u001B[31m"
-    "\u001B[37m"))
+    letter-red
+    letter-white))
 
 (s/defn background :- s/Str
   [{:keys [movement?]} :- s.board/Cell]
   (if movement?
-    "\033[44m"
-    "\033[40m"))
+    background-blue
+    background-black))
 
-(s/defn print-piece-at-position :- s/Str
+(s/defn ->print :- s.board/Print
+  [piece :- s.piece/Piece
+   value :- s.board/Cell
+   last-column? :- s/Bool]
+  {:color        (color piece)
+   :background   (background value)
+   :value        (-> value :value (str " "))
+   :last-column? last-column?})
+
+(s/defn print-piece-at-position :- s.board/Print
   [pieces :- [s.piece/Piece]
    possible-movements :- (s/maybe [s.piece/Position])
    line :- s/Int
    column :- s/Int]
-  (let [piece          (find-piece-at-board-position pieces line column)
-        value          (-> piece
-                           (piece-at-position line column possible-movements))
-        value-to-print (-> value
-                           :value
-                           (str " "))]
-    (if (last-column? column)
-      (println (color piece) (background value) value-to-print)
-      (print (color piece) (background value) value-to-print))))
+  (let [piece (find-piece-at-board-position pieces line column)
+        value (piece-at-position piece line column possible-movements)]
+    (->print piece value (last-column? column))))
 
-(s/defn line
+(s/defn columns
   [pieces :- [s.piece/Piece]
    possible-movements :- (s/maybe [s.piece/Position])
    line :- s/Int]
-  (doall (map #(print-piece-at-position pieces possible-movements line %) (range 0 9))))
+  (map #(print-piece-at-position pieces possible-movements line %) (range 0 9)))
 
-(s/defn print-board
+(s/defn lines
   [pieces :- [s.piece/Piece]
-   possible-movements :- [s.piece/Position]]
-  (doall (map #(line pieces possible-movements %) (range 0 9))))
+   possible-movements :- (s/maybe [s.piece/Position])]
+  (map #(columns pieces possible-movements %) (range 0 9)))
 
 (s/defn possible-movements :- (s/maybe [s.piece/Position])
   [{:keys [piece position]} :- s.piece/Piece]
@@ -165,54 +167,66 @@
                  :column column}))
       [])))
 
+(s/defn print-element!
+  [{:keys [value background color last-column?]} :- s.board/Print]
+  (if last-column?
+    (println background color value)
+    (print background color value)))
+
+(s/defn print-line!
+  [line]
+  (run! print-element! line))
+
 (s/defn board
+  [pieces :- [s.piece/Piece]
+   possible-movements :- [s.piece/Position]]
+  (lines pieces possible-movements))
+
+(s/defn print! [board]
+  (run! print-line! board))
+
+(s/defn print-board!
   ([pieces :- [s.piece/Piece]]
-   (print-board pieces nil))
+   (let [board (board pieces nil)]
+     (print! board)))
+
   ([pieces :- [s.piece/Piece]
-    piece-to-move :- s.piece/Piece]
-   (let [possible-movements (possible-movements piece-to-move)]
-     (print-board pieces possible-movements))))
+    possible-movements :- [s.piece/Position]]
+   (let [board (board pieces possible-movements)]
+     (print! board))))
+
+(s/defn move :- [s.piece/Piece]
+  [pieces :- [s.piece/Piece]
+   piece-to-move :- s.piece/Piece
+   {:keys [line column]} :- s.piece/Position]
+  (let [pieces-without-piece-to-move (remove #(= % piece-to-move) pieces)
+        piece-at-new-position        (-> piece-to-move
+                                         (assoc-in [:position :line] line)
+                                         (assoc-in [:position :column] column))]
+    (conj pieces-without-piece-to-move piece-at-new-position)))
 
 (s/defn clean-console []
   (print (str (char 27) "[2J"))
   (print (str (char 27) "[;H")))
 
-(s/defn origin :- (s/maybe s.piece/Piece)
-  [pieces :- [s.piece/Piece]]
-  (println "Which piece will u move?")
-  (let [input  (str/split (read-line) #"")
-        line   (Integer/parseInt (first input))
-        column (second input)]
-    (find-piece-at-position pieces line column)))
-
-(s/defn desitiny :- s.piece/Position
-  []
-  (println "To where?")
+(s/defn read! :- s.piece/Position
+  [text :- s/Str]
+  (println text)
   (let [input  (str/split (read-line) #"")
         line   (Integer/parseInt (first input))
         column (second input)]
     {:line line :column column}))
 
-(s/defn pieces-after-movement :- [s.piece/Piece]
-  [pieces :- [s.piece/Piece]
-   piece-to-move :- s.piece/Piece
-   {:keys [line column]} :- s.piece/Position]
-  (println "To where?")
-  (let [pieces-without-piece-to-move (remove #(= % piece-to-move) pieces)
-        piece-at-new-position        (-> piece-to-move
-                                         (assoc-in [:position :line] line)
-                                         (assoc-in [:position :column] column))]
-
-    (conj pieces-without-piece-to-move piece-at-new-position)))
-
 (s/defn game
   [pieces :- [s.piece/Piece]]
   (clean-console)
-  (board pieces)
-  (let [piece-to-move (origin pieces)]
-    (board pieces piece-to-move)
-    (->> (desitiny)
-         (pieces-after-movement pieces piece-to-move)
+  (print-board! pieces)
+  (let [position           (read! "Which piece will u move?")
+        piece-to-move      (find-piece-at-position pieces position)
+        possible-movements (possible-movements piece-to-move)]
+    (print-board! pieces possible-movements)
+    (->> (read! "To where?")
+         (move pieces piece-to-move)
          game)))
 
 (defn -main
