@@ -1,5 +1,6 @@
 (ns chess.core
-  (:require [chess.game :as game]
+  (:require [chess.console :as console]
+            [chess.game :as game]
             [chess.schemata.piece :as s.piece]
             [chess.schemata.board :as s.board]
             [clojure.string :as str]
@@ -167,33 +168,20 @@
                  :column column}))
       [])))
 
-(s/defn print-element!
-  [{:keys [value background color last-column?]} :- s.board/Print]
-  (if last-column?
-    (println background color value)
-    (print background color value)))
-
-(s/defn print-line!
-  [line]
-  (run! print-element! line))
-
 (s/defn board
   [pieces :- [s.piece/Piece]
    possible-movements :- [s.piece/Position]]
   (lines pieces possible-movements))
 
-(s/defn print! [board]
-  (run! print-line! board))
-
 (s/defn print-board!
   ([pieces :- [s.piece/Piece]]
    (let [board (board pieces nil)]
-     (print! board)))
+     (console/print! board)))
 
   ([pieces :- [s.piece/Piece]
     possible-movements :- [s.piece/Position]]
    (let [board (board pieces possible-movements)]
-     (print! board))))
+     (console/print! board))))
 
 (s/defn move :- [s.piece/Piece]
   [pieces :- [s.piece/Piece]
@@ -205,32 +193,40 @@
                                          (assoc-in [:position :column] column))]
     (conj pieces-without-piece-to-move piece-at-new-position)))
 
-(s/defn clean-console []
-  (print (str (char 27) "[2J"))
-  (print (str (char 27) "[;H")))
+(s/defn pass-turn :- s.piece/Color
+  [turn :- s.piece/Color]
+  (if (= turn :white)
+    :black
+    :white))
 
-(s/defn read! :- s.piece/Position
-  [text :- s/Str]
-  (println text)
-  (let [input  (str/split (read-line) #"")
-        line   (Integer/parseInt (first input))
-        column (second input)]
-    {:line line :column column}))
+(s/defn read-piece-to-move! :- s.piece/Piece
+  [text :- s/Str
+   pieces :- [s.piece/Piece]
+   turn :- s.piece/Color]
+  (let [position      (console/read! text)
+        piece-to-move (find-piece-at-position pieces position)
+        color         (:color piece-to-move)]
+    (if (and (some? color)
+             (= color turn))
+      piece-to-move
+      (read-piece-to-move! (str "You have to choose a piece from the " (name turn) " color. Try again!") pieces turn))))
 
 (s/defn game
-  [pieces :- [s.piece/Piece]]
-  (clean-console)
+  [turn :- s.piece/Color
+   pieces :- [s.piece/Piece]]
+  (console/clean-console)
+  (println "TURN:" (name turn))
   (print-board! pieces)
-  (let [position           (read! "Which piece will u move?")
-        piece-to-move      (find-piece-at-position pieces position)
-        possible-movements (possible-movements piece-to-move)]
+  (let [piece-to-move      (read-piece-to-move! "Which piece will u move?" pieces turn)
+        possible-movements (possible-movements piece-to-move)
+        next-turn          (pass-turn turn)]
     (print-board! pieces possible-movements)
-    (->> (read! "To where?")
+    (->> (console/read-movement! "To where?" possible-movements)
          (move pieces piece-to-move)
-         game)))
+         (game next-turn))))
 
 (defn -main
   "chess, mate!"
   [& args]
   (let [pieces game/pieces]
-    (game pieces)))
+    (game :white pieces)))
