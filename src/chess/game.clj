@@ -1,4 +1,6 @@
-(ns chess.game)
+(ns chess.game
+  (:require [chess.schemata.piece :as s.piece]
+            [schema.core :as s]))
 
 (def pieces
   [{:position {:line 1 :column "a"} :color :white :piece :rook :movements 0}
@@ -33,3 +35,9 @@
    {:position {:line 7 :column "f"} :color :black :piece :pawn :movements 0}
    {:position {:line 7 :column "g"} :color :black :piece :pawn :movements 0}
    {:position {:line 7 :column "h"} :color :black :piece :pawn :movements 0}])
+
+(s/defn enenmy? :- s/Bool
+  [color :- s.piece/Color
+   piece :- s.piece/Piece]
+  (and (some? piece)
+       (not (= (:color piece) color))))

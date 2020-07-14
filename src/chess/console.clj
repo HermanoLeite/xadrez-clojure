@@ -35,7 +35,7 @@
    pieces :- [s.piece/Piece]
    turn :- s.piece/Color]
   (let [position      (read! text)
-        piece-to-move (board/find-piece-at-position pieces position)
+        piece-to-move (board/find-piece-at-position position pieces)
         color         (:color piece-to-move)]
     (if (and (some? color)
              (= color turn))
