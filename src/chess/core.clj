@@ -2,6 +2,7 @@
   (:require [chess.board :as board]
             [chess.console :as console]
             [chess.pieces.pawn :as pawn]
+            [chess.pieces.knight :as knight]
             [chess.game :as game]
             [chess.schemata.piece :as s.piece]
             [chess.schemata.board :as s.board]
@@ -42,7 +43,7 @@
     (->cell (board/line-number line) false)
 
     (board/x-axis? line column)
-    (->cell (board/column-letter column) false)
+    (->cell (board/column-letter-from-board column) false)
 
     (possible-movement? possible-movements line column)
     (->cell (piece-name piece) true)
@@ -106,6 +107,9 @@
   (case piece
     :pawn
     (pawn/possible-movements piece-to-move pieces)
+
+    :knight
+    (knight/possible-movements piece-to-move pieces)
 
     []))
 

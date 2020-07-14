@@ -26,17 +26,17 @@
       ;top left
       (game/enenmy? color (-> position
                               (assoc :line (+ line 1))
-                              (assoc :column (board/previous-letter column))
+                              (assoc :column (board/previous-column column))
                               (board/find-piece-at-position pieces)))
       (conj {:line   (+ line 1)
-             :column (board/previous-letter column)})
+             :column (board/previous-column column)})
       ;top right
       (game/enenmy? color (-> position
                               (assoc :line (+ line 1))
-                              (assoc :column (board/next-letter column))
+                              (assoc :column (board/next-column column))
                               (board/find-piece-at-position pieces)))
       (conj {:line   (+ line 1)
-             :column (board/next-letter column)}))))
+             :column (board/next-column column)}))))
 
 (s/defn ^:private possible-movements-black-pawn
   [{:keys [position movements color]} :- s.piece/Piece
@@ -44,7 +44,7 @@
   (let [line   (:line position)
         column (:column position)]
     (cond-> []
-      ; bottom
+      ;bottom
       (nil? (-> position
                 (assoc :line (- line 1))
                 (board/find-piece-at-position pieces)))
@@ -60,17 +60,17 @@
       ;bottom left
       (game/enenmy? color (-> position
                               (assoc :line (- line 1))
-                              (assoc :column (board/previous-letter column))
+                              (assoc :column (board/previous-column column))
                               (board/find-piece-at-position pieces)))
       (conj {:line   (- line 1)
-             :column (board/previous-letter column)})
+             :column (board/previous-column column)})
       ;bottom right
       (game/enenmy? color (-> position
                               (assoc :line (- line 1))
-                              (assoc :column (board/next-letter column))
+                              (assoc :column (board/next-column column))
                               (board/find-piece-at-position pieces)))
       (conj {:line   (- line 1)
-             :column (board/next-letter column)}))))
+             :column (board/next-column column)}))))
 
 
 (s/defn possible-movements :- [s.piece/Position]

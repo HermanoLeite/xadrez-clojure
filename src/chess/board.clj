@@ -4,22 +4,35 @@
 
 (def abc ["a" "b" "c" "d" "e" "f" "g" "h"])
 
-(s/defn column-letter :- s/Str
+(s/defn column-letter-from-board :- s/Str
   [column :- s/Int]
   (nth abc (- column 1)))
 
-(s/defn next-letter
-  [letter :- s/Str]
-  (-> abc
-      (.indexOf letter)
-      (+ 2)
-      column-letter))
+(s/defn column-letter-from-piece :- (s/maybe s/Str)
+  [column :- s/Int]
+  (when (and (>= column 0)
+             (< column 8))
+    (nth abc column)))
 
-(s/defn previous-letter
-  [letter :- s/Str]
-  (-> abc
-      (.indexOf letter)
-      column-letter))
+(s/defn next-column :- (s/maybe s/Str)
+  ([letter :- s/Str]
+   (next-column letter 1))
+  ([letter :- s/Str
+    number-of-columns :- s/Int]
+   (-> abc
+       (.indexOf letter)
+       (+ number-of-columns)
+       column-letter-from-piece)))
+
+(s/defn previous-column :- (s/maybe s/Str)
+  ([letter :- s/Str]
+   (previous-column letter 1))
+  ([letter :- s/Str
+    number-of-columns :- s/Int]
+   (-> abc
+       (.indexOf letter)
+       (- number-of-columns)
+       column-letter-from-piece)))
 
 (s/defn line-number :- s/Str
   [line :- s/Int]
@@ -35,7 +48,14 @@
    line :- s/Int]
   (and (= column 8) (> line 0)))
 
-(s/defn inside-board? :- s/Bool
+(s/defn piece-inside-board? :- s/Bool
+  [{:keys [line column]} :- s.piece/Position]
+  (and (>= line 1)
+       (<= line 8)
+       (>= (.indexOf abc column) 0)
+       (< (.indexOf abc column) 8)))
+
+(s/defn ^:private inside-board? :- s/Bool
   [board-line :- s/Int
    board-column :- s/Int]
   (and (>= board-line 0)
@@ -49,7 +69,7 @@
    board-column :- s/Int]
   (and (inside-board? board-line board-column)
        (= (- 8 line) board-line)
-       (= column (column-letter board-column))))
+       (= column (column-letter-from-board board-column))))
 
 (s/defn piece-at-position? :- s/Bool
   [{:keys [line column]} :- s.piece/Position
