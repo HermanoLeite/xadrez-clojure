@@ -39,14 +39,16 @@
   (- 8 line))
 
 (s/defn y-axis? :- s/Bool
-  [column :- s/Int
-   line :- s/Int]
-  (and (= line 0) (< column 8)))
+  [line :- s/Int
+   column :- s/Int]
+  (and (= column 0)
+       (< line 8)))
 
 (s/defn x-axis? :- s/Bool
-  [column :- s/Int
-   line :- s/Int]
-  (and (= column 8) (> line 0)))
+  [line :- s/Int
+   column :- s/Int]
+  (and (= line 8)
+       (> column 0)))
 
 (s/defn piece-inside-board? :- s/Bool
   [{:keys [line column]} :- s.piece/Position]
@@ -79,7 +81,7 @@
        (= column board-column)))
 
 (s/defn find-piece-at-board-position :- (s/maybe s.piece/Piece)
-  [pieces :- (s/maybe s.piece/Piece)
+  [pieces :- (s/maybe [s.piece/Piece])
    line :- s/Int
    column :- s/Int]
   (let [piece (filter #(piece-at-board-position? (:position %) line column) pieces)]
