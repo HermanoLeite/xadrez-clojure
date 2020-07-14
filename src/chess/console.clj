@@ -1,5 +1,6 @@
 (ns chess.console
-  (:require [chess.schemata.board :as s.board]
+  (:require [chess.board :as board]
+            [chess.schemata.board :as s.board]
             [chess.schemata.piece :as s.piece]
             [clojure.string :as str]
             [schema.core :as s]))
@@ -28,6 +29,18 @@
         line   (Integer/parseInt (first input))
         column (second input)]
     {:line line :column column}))
+
+(s/defn read-piece-to-move! :- s.piece/Piece
+  [text :- s/Str
+   pieces :- [s.piece/Piece]
+   turn :- s.piece/Color]
+  (let [position      (read! text)
+        piece-to-move (board/find-piece-at-position pieces position)
+        color         (:color piece-to-move)]
+    (if (and (some? color)
+             (= color turn))
+      piece-to-move
+      (read-piece-to-move! (str "You have to choose a piece from the " (name turn) " color. Try again!") pieces turn))))
 
 (s/defn read-movement! :- s.piece/Position
   [text :- s/Str

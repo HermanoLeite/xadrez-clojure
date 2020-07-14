@@ -21,4 +21,3 @@
    :movements {:schema s/Int :required true}})
 
 (s/defschema Piece piece-skeleton)
-
