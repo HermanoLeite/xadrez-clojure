@@ -20,7 +20,7 @@
   [color :- s.piece/Color
    pieces :- [s.piece/Piece]
    movement :- s.piece/Position]
-  (and (board/piece-inside-board? movement)
+  (and (board/position-inside-board? movement)
        (let [piece (board/find-piece-at-position movement pieces)]
          (boolean (or (nil? piece)
                       (game/enenmy? color piece))))))

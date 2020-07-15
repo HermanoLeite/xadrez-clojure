@@ -50,7 +50,7 @@
   (and (= line 8)
        (> column 0)))
 
-(s/defn piece-inside-board? :- s/Bool
+(s/defn position-inside-board? :- s/Bool
   [{:keys [line column]} :- s.piece/Position]
   (and (>= line 1)
        (<= line 8)

@@ -1,6 +1,7 @@
 (ns chess.core
   (:require [chess.board :as board]
             [chess.console :as console]
+            [chess.pieces.bishop :as bishop]
             [chess.pieces.pawn :as pawn]
             [chess.pieces.knight :as knight]
             [chess.game :as game]
@@ -110,6 +111,9 @@
 
     :knight
     (knight/possible-movements piece-to-move pieces)
+
+    :bishop
+    (bishop/possible-movements piece-to-move pieces)
 
     []))
 
