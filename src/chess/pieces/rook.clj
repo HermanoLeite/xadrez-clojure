@@ -1,0 +1,1 @@
+(ns chess.pieces.rook)
