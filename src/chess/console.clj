@@ -22,6 +22,13 @@
   (print (str (char 27) "[2J"))
   (print (str (char 27) "[;H")))
 
+(s/defn print-intro!
+  [turn :- s.piece/Color
+   warn :- s/Str]
+  (clean-console)
+  (println "TURN:" (name turn))
+  (println warn))
+
 (s/defn read! :- s.piece/Position
   [text :- s/Str]
   (println text)
@@ -49,3 +56,29 @@
     (if (some #(= % movement) possible-movements)
       movement
       (read-movement! "Invalid position! Should be in a blue spot :) try again!" possible-movements))))
+
+(def background-black "\033[40m")
+(def background-blue "\033[44m")
+(def letter-white "\u001B[37m")
+(def letter-red "\u001B[31m")
+
+(s/defn color :- s/Str
+  [{:keys [color]} :- s.piece/Piece]
+  (if (= color :black)
+    letter-red
+    letter-white))
+
+(s/defn background :- s/Str
+  [{:keys [movement?]} :- s.board/Cell]
+  (if movement?
+    background-blue
+    background-black))
+
+(s/defn ->print :- s.board/Print
+  [piece :- s.piece/Piece
+   value :- s.board/Cell
+   last-column? :- s/Bool]
+  {:color        (color piece)
+   :background   (background value)
+   :value        (-> value :value (str " "))
+   :last-column? last-column?})

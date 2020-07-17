@@ -36,6 +36,23 @@
    {:position {:line 7 :column "g"} :color :black :piece :pawn :movements 0}
    {:position {:line 7 :column "h"} :color :black :piece :pawn :movements 0}])
 
+(s/defn piece-name :- s/Str
+  [{:keys [piece]} :- (s/maybe s.piece/Piece)]
+  (case piece
+    :pawn "P"
+    :bishop "B"
+    :knight "N"
+    :queen "Q"
+    :king "K"
+    :rook "R"
+    "-"))
+
+(s/defn pass-turn :- s.piece/Color
+  [turn :- s.piece/Color]
+  (if (= turn :white)
+    :black
+    :white))
+
 (s/defn enenmy? :- s/Bool
   [color :- s.piece/Color
    piece :- s.piece/Piece]

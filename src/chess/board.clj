@@ -1,6 +1,8 @@
 (ns chess.board
-  (:require [schema.core :as s]
-            [chess.schemata.piece :as s.piece]))
+  (:require [chess.game :as game]
+            [chess.schemata.board :as s.board]
+            [chess.schemata.piece :as s.piece]
+            [schema.core :as s]))
 
 (def abc ["a" "b" "c" "d" "e" "f" "g" "h"])
 
@@ -92,3 +94,38 @@
    pieces :- (s/maybe s.piece/Piece)]
   (let [piece (filter #(piece-at-position? (:position %) line column) pieces)]
     (first piece)))
+
+(s/defn possible-movement? :- s/Bool
+  [possible-movements :- [s.piece/Position]
+   line :- s/Int
+   column :- s/Int]
+  (let [piece (filter #(piece-at-board-position? % line column) possible-movements)]
+    (first piece)))
+
+(s/defn ->cell :- s.board/Cell
+  [piece :- s/Str
+   movement? :- s/Bool]
+  {:value     piece
+   :movement? movement?})
+
+(s/defn piece-at-position :- s.board/Cell
+  [piece :- (s/maybe s.piece/Piece)
+   line :- s/Int
+   column :- s/Int
+   possible-movements :- (s/maybe [s.piece/Position])]
+  (cond
+    (y-axis? line column)
+    (->cell (line-number line) false)
+
+    (x-axis? line column)
+    (->cell (column-letter-from-board column) false)
+
+    (possible-movement? possible-movements line column)
+    (->cell (game/piece-name piece) true)
+
+    :else
+    (->cell (game/piece-name piece) false)))
+
+(s/defn last-column? :- s/Bool
+  [column :- s/Int]
+  (= 8 column))
