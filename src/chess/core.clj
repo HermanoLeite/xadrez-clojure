@@ -3,6 +3,7 @@
             [chess.console :as console]
             [chess.pieces.bishop :as bishop]
             [chess.pieces.knight :as knight]
+            [chess.pieces.king :as king]
             [chess.pieces.queen :as queen]
             [chess.pieces.pawn :as pawn]
             [chess.pieces.rook :as rook]
@@ -122,6 +123,9 @@
 
     :queen
     (queen/possible-movements piece-to-move pieces)
+
+    :king
+    (king/possible-movements piece-to-move pieces)
 
     []))
 

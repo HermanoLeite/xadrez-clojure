@@ -46,7 +46,6 @@
         movements-until-not-nil-position (first movements)
         first-not-nil-position           (first (second movements))
         first-not-nil-piece              (board/find-piece-at-position first-not-nil-position pieces)]
-    (println movements)
     (if (game/enenmy? color first-not-nil-piece)
       (conj movements-until-not-nil-position first-not-nil-position)
       movements-until-not-nil-position)))
@@ -54,7 +53,6 @@
 (s/defn possible-movements :- [s.piece/Position]
   [{:keys [color] :as piece} :- s.piece/Piece
    pieces :- [s.piece/Piece]]
-  (println "rook possible movements")
   (let [partial-possible-movements (partial inline-possible-movements color pieces (:position piece))
         possible-movements                  (concat (partial-possible-movements vertical-movements +)
                                                     (partial-possible-movements vertical-movements -)
