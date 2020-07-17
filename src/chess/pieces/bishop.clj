@@ -33,15 +33,14 @@
   (let [movements              (split-with (partial possible-movement? pieces) (diogonal-movements position line-function column-function))
         first-part             (first movements)
         first-not-nil-position (first (second movements))
-        first-not-nill-piece   (board/find-piece-at-position first-not-nil-position pieces)]
-    (if (game/enenmy? color first-not-nill-piece)
+        first-not-nil-piece    (board/find-piece-at-position first-not-nil-position pieces)]
+    (if (game/enenmy? color first-not-nil-piece)
       (conj first-part first-not-nil-position)
       first-part)))
 
 (s/defn possible-movements :- [s.piece/Position]
   [{:keys [color] :as piece} :- s.piece/Piece
    pieces :- [s.piece/Piece]]
-  (println "bishop possible movements")
   (let [partial-possible-diogonal-movements (partial possible-diogonal-movements color pieces (:position piece))
         possible-movements                  (concat (partial-possible-diogonal-movements + board/next-column)
                                                     (partial-possible-diogonal-movements + board/previous-column)

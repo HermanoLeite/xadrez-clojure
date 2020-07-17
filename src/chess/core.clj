@@ -2,8 +2,9 @@
   (:require [chess.board :as board]
             [chess.console :as console]
             [chess.pieces.bishop :as bishop]
-            [chess.pieces.pawn :as pawn]
             [chess.pieces.knight :as knight]
+            [chess.pieces.pawn :as pawn]
+            [chess.pieces.rook :as rook]
             [chess.game :as game]
             [chess.schemata.piece :as s.piece]
             [chess.schemata.board :as s.board]
@@ -115,6 +116,9 @@
     :bishop
     (bishop/possible-movements piece-to-move pieces)
 
+    :rook
+    (rook/possible-movements piece-to-move pieces)
+
     []))
 
 (s/defn board
@@ -135,14 +139,15 @@
 (s/defn move :- [s.piece/Piece]
   [pieces :- [s.piece/Piece]
    piece-to-move :- s.piece/Piece
-   {:keys [line column]} :- s.piece/Position]
-  (let [pieces-without-piece-to-move (remove #(= % piece-to-move) pieces)
-        movement                     (-> piece-to-move :movements (+ 1))
-        piece-at-new-position        (-> piece-to-move
-                                         (assoc-in [:position :line] line)
-                                         (assoc-in [:position :column] column)
-                                         (assoc :movements movement))]
-    (conj pieces-without-piece-to-move piece-at-new-position)))
+   position :- s.piece/Position]
+  (let [captured-piece                  (board/find-piece-at-position position pieces)
+        pieces-without-pieces-to-remove (remove #(or (= % piece-to-move)
+                                                     (= % captured-piece)) pieces)
+        uptaded-movements               (-> piece-to-move :movements (+ 1))
+        piece-at-new-position           (-> piece-to-move
+                                            (assoc :position position)
+                                            (assoc :movements uptaded-movements))]
+    (conj pieces-without-pieces-to-remove piece-at-new-position)))
 
 (s/defn pass-turn :- s.piece/Color
   [turn :- s.piece/Color]
