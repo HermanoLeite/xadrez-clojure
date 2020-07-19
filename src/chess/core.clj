@@ -3,8 +3,8 @@
             [chess.console :as console]
             [chess.game :as game]
             [chess.piece :as piece]
-            [chess.schemata.piece :as s.piece]
             [chess.schemata.board :as s.board]
+            [chess.schemata.piece :as s.piece]
             [schema.core :as s])
   (:gen-class))
 
@@ -14,8 +14,8 @@
    line :- s/Int
    column :- s/Int]
   (let [piece (board/find-piece-at-board-position pieces line column)
-        value (board/piece-at-position piece line column possible-movements)]
-    (console/->print piece value (board/last-column? column))))
+        value (board/value-at-position piece line column possible-movements)]
+    (console/->print (:color piece) value (board/last-column? column))))
 
 (s/defn columns
   [pieces :- [s.piece/Piece]
@@ -47,17 +47,22 @@
   [warn :- s/Str
    turn :- s.piece/Color
    pieces :- [s.piece/Piece]]
-  (console/print-intro! turn warn)
+  (console/print-intro! turn warn (piece/xeque? pieces turn))
   (print-board! pieces)
-  (let [piece-to-move      (console/read-piece-to-move! "Which piece will u move?" pieces turn)
-        possible-movements (piece/possible-movements piece-to-move pieces)
-        next-turn          (game/pass-turn turn)]
-    (if (empty? possible-movements)
-      (game "No movements for that piece, sorry." turn pieces)
-      (print-board! pieces possible-movements))
-    (->> (console/read-movement! "To where?" possible-movements)
-         (piece/move pieces piece-to-move)
-         (game "" next-turn))))
+  (try
+    (let [piece-to-move      (console/read-piece-to-move! "Which piece will u move?" pieces turn)
+          possible-movements (piece/possible-movements piece-to-move pieces false)
+          next-turn          (game/pass-turn turn)]
+      (if (empty? possible-movements)
+        (game "No movements for that piece, sorry." turn pieces)
+        (print-board! pieces possible-movements))
+      (->> (console/read-movement! "To where?" possible-movements)
+           (piece/move pieces piece-to-move)
+           (game "" next-turn)))
+    (catch NumberFormatException e
+      (game "Invalid input - input ex: 2a" turn pieces))
+    (catch Exception error
+      (game error turn pieces))))
 
 (defn -main
   "chess, mate!"

@@ -57,4 +57,4 @@
   [color :- s.piece/Color
    piece :- s.piece/Piece]
   (and (some? piece)
-       (not (= (:color piece) color))))
+       (not= (:color piece) color)))

@@ -24,10 +24,13 @@
 
 (s/defn print-intro!
   [turn :- s.piece/Color
-   warn :- s/Str]
+   warn :- s/Str
+   xeque? :- s/Bool]
   (clean-console)
   (println "TURN:" (name turn))
-  (println warn))
+  (println warn)
+  (when xeque?
+    (println "Carefull dude!! You're in xeque!!")))
 
 (s/defn read! :- s.piece/Position
   [text :- s/Str]
@@ -62,8 +65,8 @@
 (def letter-white "\u001B[37m")
 (def letter-red "\u001B[31m")
 
-(s/defn color :- s/Str
-  [{:keys [color]} :- s.piece/Piece]
+(s/defn console-color :- s/Str
+  [color :- s.piece/Color]
   (if (= color :black)
     letter-red
     letter-white))
@@ -75,10 +78,10 @@
     background-black))
 
 (s/defn ->print :- s.board/Print
-  [piece :- s.piece/Piece
+  [color :- s.piece/color
    value :- s.board/Cell
    last-column? :- s/Bool]
-  {:color        (color piece)
+  {:color        (console-color color)
    :background   (background value)
    :value        (-> value :value (str " "))
    :last-column? last-column?})

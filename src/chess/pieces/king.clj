@@ -25,8 +25,17 @@
          (boolean (or (nil? piece)
                       (game/enenmy? color piece))))))
 
+(s/defn not-enemy-movement? :- s/Bool
+  [king-position :- s.piece/Position
+   enemy-movements :- [s.piece/Position]]
+  (not (some #(= king-position %) enemy-movements)))
+
 (s/defn possible-movements :- [s.piece/Piece]
   [piece :- s.piece/Piece
-   pieces :- [s.piece/Piece]]
-  (let [all-possible-movements (all-possible-movements piece)]
-    (filter #(possible-to-move? (:color piece) pieces %) all-possible-movements)))
+   pieces :- [s.piece/Piece]
+   all-enemy-movements :- [s.piece/Position]]
+  (let [all-possible-movements (all-possible-movements piece)
+        possible               (->> all-possible-movements
+                                    (filter #(possible-to-move? (:color piece) pieces %))
+                                    (filter #(not-enemy-movement? % all-enemy-movements)))]
+    possible))

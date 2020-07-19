@@ -108,7 +108,7 @@
   {:value     piece
    :movement? movement?})
 
-(s/defn piece-at-position :- s.board/Cell
+(s/defn value-at-position :- s.board/Cell
   [piece :- (s/maybe s.piece/Piece)
    line :- s/Int
    column :- s/Int

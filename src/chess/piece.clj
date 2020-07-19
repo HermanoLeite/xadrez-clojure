@@ -7,14 +7,16 @@
             [chess.pieces.queen :as queen]
             [chess.pieces.rook :as rook]
             [chess.schemata.piece :as s.piece]
-            [schema.core :as s]))
+            [schema.core :as s]
+            [chess.game :as game]))
 
 (s/defn possible-movements :- (s/maybe [s.piece/Position])
-  [{:keys [piece] :as piece-to-move} :- s.piece/Piece
-   pieces :- [s.piece/Piece]]
+  [{:keys [piece color] :as piece-to-move} :- s.piece/Piece
+   pieces :- [s.piece/Piece]
+   only-capture-movements? :- s/Bool]
   (case piece
     :pawn
-    (pawn/possible-movements piece-to-move pieces)
+    (pawn/possible-movements piece-to-move pieces only-capture-movements?)
 
     :knight
     (knight/possible-movements piece-to-move pieces)
@@ -29,7 +31,13 @@
     (queen/possible-movements piece-to-move pieces)
 
     :king
-    (king/possible-movements piece-to-move pieces)
+    (if only-capture-movements?
+      (king/possible-movements piece-to-move pieces [])
+      (->> pieces
+           (filter #(game/enenmy? color %))
+           (map #(possible-movements % pieces true))
+           (reduce concat)
+           (king/possible-movements piece-to-move pieces)))
 
     []))
 
@@ -37,11 +45,24 @@
   [pieces :- [s.piece/Piece]
    piece-to-move :- s.piece/Piece
    to-position :- s.piece/Position]
-  (let [captured-piece                  (board/find-piece-at-position to-position pieces)
-        pieces-without-pieces-to-remove (remove #(or (= % piece-to-move)
-                                                     (= % captured-piece)) pieces)
-        uptaded-movements               (-> piece-to-move :movements (+ 1))
-        piece-at-new-position           (-> piece-to-move
-                                            (assoc :position to-position)
-                                            (assoc :movements uptaded-movements))]
-    (conj pieces-without-pieces-to-remove piece-at-new-position)))
+  (let [captured-piece             (board/find-piece-at-position to-position pieces)
+        pieces-with-removed-pieces (remove #(or (= % piece-to-move)
+                                                (= % captured-piece)) pieces)
+        uptaded-movements          (-> piece-to-move :movements (+ 1))
+        piece-at-new-position      (-> piece-to-move
+                                       (assoc :position to-position)
+                                       (assoc :movements uptaded-movements))]
+    (conj pieces-with-removed-pieces piece-at-new-position)))
+
+(s/defn xeque? :- s/Bool
+  [pieces :- [s.piece/Piece]
+   color :- s.piece/Color]
+  (let [king            (->> pieces
+                             (filter #(and (= :king (:piece %))
+                                           (= color (:color %))))
+                             first)
+        enemy-movements (->> pieces
+                             (filter #(game/enenmy? color %))
+                             (map #(possible-movements % pieces true))
+                             (reduce concat))]
+       (some #(= (:position king) %) enemy-movements)))
