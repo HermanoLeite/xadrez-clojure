@@ -62,7 +62,7 @@
     (catch NumberFormatException e
       (game "Invalid input - input ex: 2a" turn pieces))
     (catch Exception error
-      (game error turn pieces))))
+      (game (.getMessage error) turn pieces))))
 
 (defn -main
   "chess, mate!"

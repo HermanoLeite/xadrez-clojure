@@ -41,19 +41,6 @@
 
     []))
 
-(s/defn move :- [s.piece/Piece]
-  [pieces :- [s.piece/Piece]
-   piece-to-move :- s.piece/Piece
-   to-position :- s.piece/Position]
-  (let [captured-piece             (board/find-piece-at-position to-position pieces)
-        pieces-with-removed-pieces (remove #(or (= % piece-to-move)
-                                                (= % captured-piece)) pieces)
-        uptaded-movements          (-> piece-to-move :movements (+ 1))
-        piece-at-new-position      (-> piece-to-move
-                                       (assoc :position to-position)
-                                       (assoc :movements uptaded-movements))]
-    (conj pieces-with-removed-pieces piece-at-new-position)))
-
 (s/defn xeque? :- s/Bool
   [pieces :- [s.piece/Piece]
    color :- s.piece/Color]
@@ -65,4 +52,20 @@
                              (filter #(game/enenmy? color %))
                              (map #(possible-movements % pieces true))
                              (reduce concat))]
-       (some #(= (:position king) %) enemy-movements)))
+    (some #(= (:position king) %) enemy-movements)))
+
+(s/defn move :- [s.piece/Piece]
+  [pieces :- [s.piece/Piece]
+   piece-to-move :- s.piece/Piece
+   to-position :- s.piece/Position]
+  (let [captured-piece             (board/find-piece-at-position to-position pieces)
+        pieces-with-removed-pieces (remove #(or (= % piece-to-move)
+                                                (= % captured-piece)) pieces)
+        uptaded-movements          (-> piece-to-move :movements (+ 1))
+        piece-at-new-position      (-> piece-to-move
+                                       (assoc :position to-position)
+                                       (assoc :movements uptaded-movements))
+        updated-pieces             (conj pieces-with-removed-pieces piece-at-new-position)]
+    (if (xeque? updated-pieces (:color piece-to-move))
+      (throw (Exception. "You can't put yourself in a xeque position!"))
+      updated-pieces)))

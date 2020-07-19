@@ -30,7 +30,7 @@
   (println "TURN:" (name turn))
   (println warn)
   (when xeque?
-    (println "Carefull dude!! You're in xeque!!")))
+    (println "Careful dude!! You're in xeque!!")))
 
 (s/defn read! :- s.piece/Position
   [text :- s/Str]
