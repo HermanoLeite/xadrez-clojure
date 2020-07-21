@@ -47,6 +47,7 @@
   [warn :- s/Str
    turn :- s.piece/Color
    pieces :- [s.piece/Piece]]
+  (piece/xeque-mate? turn pieces)
   (console/print-intro! turn warn (piece/xeque? pieces turn))
   (print-board! pieces)
   (try
@@ -57,7 +58,7 @@
         (game "No movements for that piece, sorry." turn pieces)
         (print-board! pieces possible-movements))
       (->> (console/read-movement! "To where?" possible-movements)
-           (piece/move pieces piece-to-move)
+           (piece/move! pieces piece-to-move)
            (game "" next-turn)))
     (catch NumberFormatException e
       (game "Invalid input - input ex: 2a" turn pieces))

@@ -11,38 +11,43 @@
             [chess.game :as game]))
 
 (s/defn possible-movements :- (s/maybe [s.piece/Position])
-  [{:keys [piece color] :as piece-to-move} :- s.piece/Piece
-   pieces :- [s.piece/Piece]
-   only-capture-movements? :- s/Bool]
-  (case piece
-    :pawn
-    (pawn/possible-movements piece-to-move pieces only-capture-movements?)
+  ([piece-to-move :- s.piece/Piece
+    pieces :- [s.piece/Piece]]
+   (possible-movements piece-to-move pieces false))
+  ([{:keys [piece color] :as piece-to-move} :- s.piece/Piece
+    pieces :- [s.piece/Piece]
+    only-capture-movements? :- s/Bool]
+   (case piece
+     :pawn
+     (pawn/possible-movements piece-to-move pieces only-capture-movements?)
 
-    :knight
-    (knight/possible-movements piece-to-move pieces)
+     :knight
+     (knight/possible-movements piece-to-move pieces)
 
-    :bishop
-    (bishop/possible-movements piece-to-move pieces)
+     :bishop
+     (bishop/possible-movements piece-to-move pieces)
 
-    :rook
-    (rook/possible-movements piece-to-move pieces)
+     :rook
+     (if only-capture-movements?
+       (rook/possible-move-or-capture-actions piece-to-move pieces)
+       (rook/possible-move-actions piece-to-move pieces))
 
-    :queen
-    (queen/possible-movements piece-to-move pieces)
+     :queen
+     (queen/possible-movements piece-to-move pieces)
 
-    :king
-    (if only-capture-movements?
-      (king/possible-movements piece-to-move pieces [])
-      (->> pieces
-           (filter #(game/enenmy? color %))
-           (map #(possible-movements % pieces true))
-           (reduce concat)
-           (king/possible-movements piece-to-move pieces)))
+     :king
+     (if only-capture-movements?
+       (king/possible-movements piece-to-move pieces [])
+       (->> pieces
+            (filter #(game/enenmy? color %))
+            (map #(possible-movements % pieces true))
+            (reduce concat)
+            (king/possible-movements piece-to-move pieces)))
 
-    []))
+     [])))
 
 (s/defn xeque? :- s/Bool
-  [pieces :- [s.piece/Piece]
+  [pieces :- (s/maybe [s.piece/Piece])
    color :- s.piece/Color]
   (let [king            (->> pieces
                              (filter #(and (= :king (:piece %))
@@ -52,9 +57,9 @@
                              (filter #(game/enenmy? color %))
                              (map #(possible-movements % pieces true))
                              (reduce concat))]
-    (some #(= (:position king) %) enemy-movements)))
+    (boolean (some #(= (:position king) %) enemy-movements))))
 
-(s/defn move :- [s.piece/Piece]
+(s/defn move! :- [s.piece/Piece]
   [pieces :- [s.piece/Piece]
    piece-to-move :- s.piece/Piece
    to-position :- s.piece/Position]
@@ -69,3 +74,39 @@
     (if (xeque? updated-pieces (:color piece-to-move))
       (throw (Exception. "You can't put yourself in a xeque position!"))
       updated-pieces)))
+
+(s/defn try-move :- (s/maybe [s.piece/Piece])
+  [pieces :- [s.piece/Piece]
+   piece-to-move :- s.piece/Piece
+   to-position :- s.piece/Position]
+  (try (move! pieces piece-to-move to-position)
+       (catch Exception e
+         nil)))
+
+(s/defn move-save-xaque-mate? :- s/Bool
+  [pieces :- [s.piece/Piece]
+   {:keys [color] :as piece} :- s.piece/Piece
+   to-position :- s.piece/Position]
+  (-> pieces
+      (try-move piece to-position)
+      (xeque? color)
+      not))
+
+(s/defn piece-save-xeque-mate? :- s/Bool
+  [piece :- s.piece/Piece
+   pieces :- [s.piece/Piece]]
+  (->> pieces
+       (possible-movements piece)
+       (println)
+       (map #(move-save-xaque-mate? pieces piece %))
+       (some true?)))
+
+(s/defn xeque-mate? :- s/Bool
+  [color :- s.piece/Color
+   pieces :- [s.piece/Piece]]
+  ;(and (xeque? pieces color)
+  (let [result (->> pieces
+                    (filter #(= color (:color %))))]
+    ;(reÒduce #(save-xeque-mate? % pieces)))]
+    ;true?)]
+    (println result)))

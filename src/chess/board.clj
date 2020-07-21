@@ -91,7 +91,7 @@
 
 (s/defn find-piece-at-position :- (s/maybe s.piece/Piece)
   [{:keys [line column]} :- s.piece/Position
-   pieces :- (s/maybe s.piece/Piece)]
+   pieces :- (s/maybe [s.piece/Piece])]
   (let [piece (filter #(piece-at-position? (:position %) line column) pieces)]
     (first piece)))
 

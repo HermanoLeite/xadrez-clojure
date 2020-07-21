@@ -7,6 +7,6 @@
 (s/defn possible-movements :- [s.piece/Position]
   [piece :- s.piece/Piece
    pieces :- [s.piece/Piece]]
-  (let [inline-movements (rook/possible-movements piece pieces)
+  (let [inline-movements (rook/possible-move-actions piece pieces)
         diogonal-movements (bishop/possible-movements piece pieces)]
     (concat inline-movements diogonal-movements)))

@@ -34,6 +34,9 @@
   [piece :- s.piece/Piece
    pieces :- [s.piece/Piece]
    all-enemy-movements :- [s.piece/Position]]
+  (println piece)
+  (println pieces)
+  (println all-enemy-movements)
   (let [all-possible-movements (all-possible-movements piece)
         possible               (->> all-possible-movements
                                     (filter #(possible-to-move? (:color piece) pieces %))

@@ -4,11 +4,20 @@
             [chess.board :as board]
             [chess.game :as game]))
 
-(s/defn possible-movement? :- s/Bool
+(s/defn possible-move-action? :- s/Bool
   [pieces :- [s.piece/Piece]
    position :- [s.piece/Position]]
   (let [piece (board/find-piece-at-position position pieces)]
     (nil? piece)))
+
+(s/defn rook-can-capture-or-move-to-this-position? :- s/Bool
+  [pieces :- [s.piece/Piece]
+   color :- s.piece/Color
+   position :- [s.piece/Position]]
+  (let [piece (board/find-piece-at-position position pieces)]
+    (println piece)
+    (or (nil? piece)
+        (game/enenmy? color piece))))
 
 (s/defn vertical-movements :- [s.piece/Position]
   ([position :- s.piece/Position
@@ -36,13 +45,13 @@
        (horizontal-movements (conj possible-movements new-position) new-position column-function)
        possible-movements))))
 
-(s/defn inline-possible-movements
+(s/defn inline-possible-move-actions
   [color :- s.piece/Color
    pieces :- [s.piece/Piece]
    position :- s.piece/Position
    possible-movements-function
    function-to-move]
-  (let [movements                        (split-with (partial possible-movement? pieces) (possible-movements-function position function-to-move))
+  (let [movements                        (split-with (partial possible-move-action? pieces) (possible-movements-function position function-to-move))
         movements-until-not-nil-position (first movements)
         first-not-nil-position           (first (second movements))
         first-not-nil-piece              (board/find-piece-at-position first-not-nil-position pieces)]
@@ -50,12 +59,33 @@
       (conj movements-until-not-nil-position first-not-nil-position)
       movements-until-not-nil-position)))
 
-(s/defn possible-movements :- [s.piece/Position]
+(s/defn inline-possible-capture-and-move-actions :- [s.piece/Position]
+  [{:keys [position color]} :- s.piece/Color
+   pieces :- [s.piece/Piece]
+   possible-movements-function
+   function-to-move]
+  (let [possible-move-or-capture-action? (partial rook-can-capture-or-move-to-this-position? pieces color)
+        possible-movements               (possible-movements-function position function-to-move)
+        movements                        (take-while possible-move-or-capture-action? possible-movements)]
+    (println possible-movements)
+    movements))
+
+(s/defn possible-move-actions :- [s.piece/Position]
   [{:keys [color] :as piece} :- s.piece/Piece
    pieces :- [s.piece/Piece]]
-  (let [partial-possible-movements (partial inline-possible-movements color pieces (:position piece))
-        possible-movements                  (concat (partial-possible-movements vertical-movements +)
-                                                    (partial-possible-movements vertical-movements -)
-                                                    (partial-possible-movements horizontal-movements board/next-column)
-                                                    (partial-possible-movements horizontal-movements board/previous-column))]
+  (let [partial-possible-movements (partial inline-possible-move-actions color pieces (:position piece))
+        possible-movements         (concat (partial-possible-movements vertical-movements +)
+                                           (partial-possible-movements vertical-movements -)
+                                           (partial-possible-movements horizontal-movements board/next-column)
+                                           (partial-possible-movements horizontal-movements board/previous-column))]
+    possible-movements))
+
+(s/defn possible-move-or-capture-actions :- [s.piece/Position]
+  [piece :- s.piece/Piece
+   pieces :- [s.piece/Piece]]
+  (let [partial-possible-movements (partial inline-possible-capture-and-move-actions piece pieces)
+        possible-movements         (concat (partial-possible-movements vertical-movements +)
+                                           (partial-possible-movements vertical-movements -)
+                                           (partial-possible-movements horizontal-movements board/next-column)
+                                           (partial-possible-movements horizontal-movements board/previous-column))]
     possible-movements))
