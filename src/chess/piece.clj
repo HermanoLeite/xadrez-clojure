@@ -118,4 +118,4 @@
        (let [result (->> pieces
                          (only-pieces-of-color color)
                          (any-piece-save-xeque-mate? pieces))]
-         result)))
+         (not result))))

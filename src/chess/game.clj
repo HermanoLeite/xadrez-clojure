@@ -22,8 +22,8 @@
    {:position {:line 8 :column "a"} :color :black :piece :rook :movements 0}
    {:position {:line 8 :column "b"} :color :black :piece :knight :movements 0}
    {:position {:line 8 :column "c"} :color :black :piece :bishop :movements 0}
-   {:position {:line 8 :column "e"} :color :black :piece :queen :movements 0}
-   {:position {:line 8 :column "d"} :color :black :piece :king :movements 0}
+   {:position {:line 8 :column "d"} :color :black :piece :queen :movements 0}
+   {:position {:line 8 :column "e"} :color :black :piece :king :movements 0}
    {:position {:line 8 :column "f"} :color :black :piece :bishop :movements 0}
    {:position {:line 8 :column "g"} :color :black :piece :knight :movements 0}
    {:position {:line 8 :column "h"} :color :black :piece :rook :movements 0}

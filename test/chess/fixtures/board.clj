@@ -32,6 +32,8 @@
                             :piece     :pawn
                             :movements 0}])
 
+(def pieces-in-xeque-)
+
 (def white-pieces-in-xeque-2-rooks [(assoc-in black-rook-1a [:position :line] 2)
                                     black-rook-1a
                                     white-king-1d])
@@ -40,3 +42,8 @@
                                                  black-rook-1a
                                                  white-king-1d
                                                  white-rook-5c])
+
+(def white-pieces-in-xeque-2-rooks-cant-be-saved [{:position {:line 1, :column "a"}, :color :white, :piece :rook, :movements 0}
+                                                  white-king-1d
+                                                  {:position {:line 1, :column "h"}, :color :black, :piece :rook, :movements 0}
+                                                  {:position {:line 2, :column "h"}, :color :black, :piece :rook, :movements 0}])

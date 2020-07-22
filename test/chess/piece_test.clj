@@ -143,13 +143,17 @@
 
 (deftest xeque-mate?
   (testing "cant save from xeque-mate two rooks"
-    (is (false?
+    (is (true?
           (piece/xeque-mate? :white fixture/white-pieces-in-xeque-2-rooks))))
 
   (testing "can save from xeque-mate just a pawn"
-    (is (true?
+    (is (false?
           (piece/xeque-mate? :white fixture/pieces-in-xeque-pawn))))
 
   (testing "can save from xeque-mate white rook can move"
+    (is (false?
+          (piece/xeque-mate? :white fixture/white-pieces-in-xeque-2-rooks-can-be-saved))))
+
+  (testing "cant save from xeque-mate"
     (is (true?
-          (piece/xeque-mate? :white fixture/white-pieces-in-xeque-2-rooks-can-be-saved)))))
+          (piece/xeque-mate? :white fixture/white-pieces-in-xeque-2-rooks-cant-be-saved)))))
