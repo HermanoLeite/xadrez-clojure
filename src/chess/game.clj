@@ -36,7 +36,7 @@
    {:position {:line 7 :column "g"} :color :black :piece :pawn :movements 0}
    {:position {:line 7 :column "h"} :color :black :piece :pawn :movements 0}])
 
-(s/defn piece-name :- s/Str
+(s/defn piece->letter :- s/Str
   [{:keys [piece]} :- (s/maybe s.piece/Piece)]
   (case piece
     :pawn "P"

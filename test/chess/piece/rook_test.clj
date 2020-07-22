@@ -15,6 +15,9 @@
 (def moves-to-top [{:line 2 :column "a"} {:line 3 :column "a"} {:line 4 :column "a"} {:line 5 :column "a"}
                    {:line 6 :column "a"} {:line 7 :column "a"} {:line 8 :column "a"}])
 
+(def moves-to-top-but-last [{:line 2 :column "a"} {:line 3 :column "a"} {:line 4 :column "a"} {:line 5 :column "a"}
+                            {:line 6 :column "a"} {:line 7 :column "a"}])
+
 (def moves-to-right [{:line 1 :column "b"} {:line 1 :column "c"} {:line 1 :column "d"} {:line 1 :column "e"}
                      {:line 1 :column "f"} {:line 1 :column "g"} {:line 1 :column "h"}])
 
@@ -24,7 +27,7 @@
            (rook/inline-possible-capture-and-move-actions white-rook-on-line-7 [white-rook-on-line-7] rook/vertical-movements +))))
 
   (testing "two movement to top when in line 6 and an enemy on line 7"
-    (is (= [position-7a position-8a]
+    (is (= [position-7a]
            (rook/inline-possible-capture-and-move-actions white-rook-on-line-6 [white-rook-on-line-6 black-pawn-on-line-7] rook/vertical-movements +)))))
 
 (deftest rook-can-capture-or-move-to-this-position?
@@ -48,5 +51,5 @@
            (rook/possible-move-or-capture-actions f.board/white-rook [f.board/white-rook]))))
 
   (testing "rook on the bottom left corner can move up and right even with enemy piece in the middle"
-    (is (= (concat moves-to-top moves-to-right)
+    (is (= (concat moves-to-top-but-last moves-to-right)
            (rook/possible-move-or-capture-actions f.board/white-rook [f.board/white-rook black-pawn-on-line-7])))))

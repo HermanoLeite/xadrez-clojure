@@ -28,9 +28,7 @@
      (bishop/possible-movements piece-to-move pieces)
 
      :rook
-     (if only-capture-movements?
-       (rook/possible-move-or-capture-actions piece-to-move pieces)
-       (rook/possible-move-actions piece-to-move pieces))
+     (rook/possible-move-actions piece-to-move pieces)
 
      :queen
      (queen/possible-movements piece-to-move pieces)
@@ -87,26 +85,37 @@
   [pieces :- [s.piece/Piece]
    {:keys [color] :as piece} :- s.piece/Piece
    to-position :- s.piece/Position]
-  (-> pieces
-      (try-move piece to-position)
-      (xeque? color)
-      not))
+  (boolean (some-> pieces
+                   (try-move piece to-position)
+                   (xeque? color)
+                   not)))
 
 (s/defn piece-save-xeque-mate? :- s/Bool
   [piece :- s.piece/Piece
    pieces :- [s.piece/Piece]]
   (->> pieces
        (possible-movements piece)
-       (println)
        (map #(move-save-xaque-mate? pieces piece %))
-       (some true?)))
+       (some true?)
+       (boolean)))
+
+(s/defn only-pieces-of-color :- [s.piece/Piece]
+  [color :- s.piece/Color
+   pieces :- [s.piece/Piece]]
+  (filter #(= color (:color %)) pieces))
+
+(s/defn any-piece-save-xeque-mate? :- s/Bool
+  [all-pieces :- [s.piece/Piece]
+   same-color-pieces :- [s.piece/Piece]]
+  (->> same-color-pieces
+       (some #(piece-save-xeque-mate? % all-pieces))
+       boolean))
 
 (s/defn xeque-mate? :- s/Bool
   [color :- s.piece/Color
    pieces :- [s.piece/Piece]]
-  ;(and (xeque? pieces color)
-  (let [result (->> pieces
-                    (filter #(= color (:color %))))]
-    ;(reÒduce #(save-xeque-mate? % pieces)))]
-    ;true?)]
-    (println result)))
+  (and (xeque? pieces color)
+       (let [result (->> pieces
+                         (only-pieces-of-color color)
+                         (any-piece-save-xeque-mate? pieces))]
+         result)))

@@ -15,7 +15,6 @@
    color :- s.piece/Color
    position :- [s.piece/Position]]
   (let [piece (board/find-piece-at-position position pieces)]
-    (println piece)
     (or (nil? piece)
         (game/enenmy? color piece))))
 
@@ -67,7 +66,6 @@
   (let [possible-move-or-capture-action? (partial rook-can-capture-or-move-to-this-position? pieces color)
         possible-movements               (possible-movements-function position function-to-move)
         movements                        (take-while possible-move-or-capture-action? possible-movements)]
-    (println possible-movements)
     movements))
 
 (s/defn possible-move-actions :- [s.piece/Position]

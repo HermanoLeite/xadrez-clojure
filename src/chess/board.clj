@@ -121,10 +121,10 @@
     (->cell (column-letter-from-board column) false)
 
     (possible-movement? possible-movements line column)
-    (->cell (game/piece-name piece) true)
+    (->cell (game/piece->letter piece) true)
 
     :else
-    (->cell (game/piece-name piece) false)))
+    (->cell (game/piece->letter piece) false)))
 
 (s/defn last-column? :- s/Bool
   [column :- s/Int]
