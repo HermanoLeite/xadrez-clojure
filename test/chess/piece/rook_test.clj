@@ -24,32 +24,33 @@
 (deftest inline-possible-capture-and-move-actions
   (testing "one movement to top when in line 7 and no piece above"
     (is (= [position-8a]
-           (rook/inline-possible-capture-and-move-actions white-rook-on-line-7 [white-rook-on-line-7] rook/vertical-movements +))))
+           (rook/inline-possible-move-actions white-rook-on-line-7 [white-rook-on-line-7] rook/vertical-movements +))))
 
   (testing "two movement to top when in line 6 and an enemy on line 7"
     (is (= [position-7a]
-           (rook/inline-possible-capture-and-move-actions white-rook-on-line-6 [white-rook-on-line-6 black-pawn-on-line-7] rook/vertical-movements +)))))
+           (rook/inline-possible-move-actions white-rook-on-line-6 [white-rook-on-line-6 black-pawn-on-line-7] rook/vertical-movements +)))))
 
 (deftest rook-can-capture-or-move-to-this-position?
   (testing "movement to a position with no piece - true"
     (is (true?
-          (rook/rook-can-capture-or-move-to-this-position? [white-rook-on-line-7] :white position-8a))))
-  (testing "movement to a position with enemy piece - true"
-    (is (true?
-          (rook/rook-can-capture-or-move-to-this-position? [black-pawn-on-line-7] :white position-7a))))
+          (rook/possible-move-action? [white-rook-on-line-7] position-8a))))
+  (testing "movement to a position with any piece - false"
+    (is (false?
+          (rook/possible-move-action? [black-pawn-on-line-7] position-7a))))
+
   (testing "movement to a position with same side piece - false"
     (is (false?
-          (rook/rook-can-capture-or-move-to-this-position? [white-pawn-on-line-7] :white position-7a))))
+          (rook/possible-move-action? [white-pawn-on-line-7] position-7a))))
 
   (testing "movement to a position off board - true (shouldnt happen)"
     (is (true?
-          (rook/rook-can-capture-or-move-to-this-position? [white-pawn-on-line-7] :white off-board-position)))))
+          (rook/possible-move-action? [white-pawn-on-line-7] off-board-position)))))
 
 (deftest possible-move-or-capture-actions
   (testing "rook on the bottom left corner can move up and right"
     (is (= (concat moves-to-top moves-to-right)
-           (rook/possible-move-or-capture-actions f.board/white-rook [f.board/white-rook]))))
+           (rook/possible-move-actions f.board/white-rook [f.board/white-rook]))))
 
   (testing "rook on the bottom left corner can move up and right even with enemy piece in the middle"
-    (is (= (concat moves-to-top-but-last moves-to-right)
-           (rook/possible-move-or-capture-actions f.board/white-rook [f.board/white-rook black-pawn-on-line-7])))))
+    (is (= (set (concat moves-to-top-but-last moves-to-right))
+           (set (rook/possible-move-actions f.board/white-rook [f.board/white-rook black-pawn-on-line-7]))))))
