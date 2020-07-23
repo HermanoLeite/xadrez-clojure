@@ -49,7 +49,7 @@
       (conj movements-until-not-nil-position first-not-nil-position)
       movements-until-not-nil-position)))
 
-(s/defn possible-move-actions :- [s.piece/Position]
+(s/defn possible-movements :- [s.piece/Position]
   [piece :- s.piece/Piece
    pieces :- [s.piece/Piece]]
   (let [partial-possible-movements (partial inline-possible-move-actions piece pieces)

@@ -43,26 +43,28 @@
    (let [board (board pieces possible-movements)]
      (console/print! board))))
 
+(s/defn end-of-game
+  [turn :- s.piece/Color
+   pieces :- [s.piece/Piece]]
+  (do (println "xeque mate!")
+      (println (str (game/pass-turn turn) " WINS!"))
+      (print-board! pieces)))
+
 (s/defn game
   [warn :- s/Str
    turn :- s.piece/Color
    pieces :- [s.piece/Piece]]
   (if (piece/xeque-mate? turn pieces)
-    (do (println "xeque mate!")
-        (println (str (game/pass-turn turn) " WINS!"))
-        (print-board! pieces))
+    (end-of-game turn pieces)
     (do (console/print-intro! turn warn (piece/xeque? pieces turn))
         (print-board! pieces)
         (try
           (let [piece-to-move      (console/read-piece-to-move! "Which piece will u move?" pieces turn)
-                possible-movements (piece/possible-movements piece-to-move pieces false)
-                next-turn          (game/pass-turn turn)]
-            (if (empty? possible-movements)
-              (game "No movements for that piece, sorry." turn pieces)
-              (print-board! pieces possible-movements))
+                possible-movements (piece/possible-movements! piece-to-move pieces)]
+            (print-board! pieces possible-movements)
             (->> (console/read-movement! "To where?" possible-movements)
                  (piece/move! pieces piece-to-move)
-                 (game "" next-turn)))
+                 (game "" (game/pass-turn turn))))
           (catch NumberFormatException e
             (game "Invalid input - input ex: 2a" turn pieces))
           (catch Exception error

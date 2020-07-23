@@ -49,8 +49,8 @@
 (deftest possible-move-or-capture-actions
   (testing "rook on the bottom left corner can move up and right"
     (is (= (concat moves-to-top moves-to-right)
-           (rook/possible-move-actions f.board/white-rook [f.board/white-rook]))))
+           (rook/possible-movements f.board/white-rook [f.board/white-rook]))))
 
   (testing "rook on the bottom left corner can move up and right even with enemy piece in the middle"
     (is (= (set (concat moves-to-top-but-last moves-to-right))
-           (set (rook/possible-move-actions f.board/white-rook [f.board/white-rook black-pawn-on-line-7]))))))
+           (set (rook/possible-movements f.board/white-rook [f.board/white-rook black-pawn-on-line-7]))))))

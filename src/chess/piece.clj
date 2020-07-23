@@ -28,7 +28,7 @@
      (bishop/possible-movements piece-to-move pieces)
 
      :rook
-     (rook/possible-move-actions piece-to-move pieces)
+     (rook/possible-movements piece-to-move pieces)
 
      :queen
      (queen/possible-movements piece-to-move pieces)
@@ -43,6 +43,13 @@
             (king/possible-movements piece-to-move pieces)))
 
      [])))
+
+(s/defn possible-movements! :- [s.piece/Position]
+  [piece-to-move :- s.piece/Piece
+   pieces :- [s.piece/Piece]]
+  (if-let [possible-movements (seq (possible-movements piece-to-move pieces))]
+    possible-movements
+    (throw (Exception. "No movements for that piece, sorry."))))
 
 (s/defn xeque? :- s/Bool
   [pieces :- (s/maybe [s.piece/Piece])
