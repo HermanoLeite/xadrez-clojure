@@ -15,7 +15,7 @@
   [line]
   (run! print-element! line))
 
-(s/defn print! [board]
+(s/defn print-board! [board]
   (run! print-line! board))
 
 (s/defn clean-console []
